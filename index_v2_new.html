@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="midnight">
 
 <head>
     <meta charset="UTF-8">
@@ -795,7 +795,7 @@
         });
         swatches.forEach(s => s.addEventListener('click', () => applyTheme(s.dataset.theme)));
         const savedTheme = (() => { try { return localStorage.getItem('kp-theme'); } catch (e) { return null; } })();
-        applyTheme(savedTheme || 'sandstone');
+        applyTheme(savedTheme || 'midnight');
 
         // Active nav link (scroll spy)
         const links = [...document.querySelectorAll('.nav__link')];
