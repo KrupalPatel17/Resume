@@ -1,131 +1,131 @@
 const NAV_BAR = document.getElementById('navBar');
 const NAV_LIST = document.getElementById('navList');
-const HERO_HEADER = document.getElementById('heroHeader');
 const HAMBURGER_BTN = document.getElementById('hamburgerBtn');
-const NAV_LINKS = Array.from( document.querySelectorAll('.nav__list-link'));
+const NAV_LINKS = Array.from(document.querySelectorAll('.nav__list-link'));
 const SERVICE_BOXES = document.querySelectorAll('.service-card__box');
 const ACTIVE_LINK_CLASS = 'active';
-const BREAKPOINT = 576;
 
-let currentServiceBG = null;
-let currentActiveLink = document.querySelector('.nav__list-link.active');
+/* -------------------------------------------------
+ * Sticky navbar background on scroll
+ * ------------------------------------------------- */
+const handleNavBackground = () => {
+    NAV_BAR.classList.toggle('is-scrolled', window.scrollY > 40);
+};
+handleNavBackground();
+window.addEventListener('scroll', handleNavBackground, { passive: true });
 
-// Remove the active state once the breakpoint is reached
-const resetActiveState = ()=>{
-  NAV_LIST.classList.remove('nav--active');
-  Object.assign(NAV_LIST.style, {
-    height: null
-  });
-  Object.assign(document.body.style, {
-    overflowY: null
-  });
+/* -------------------------------------------------
+ * Mobile navigation toggle
+ * ------------------------------------------------- */
+const closeMobileNav = () => {
+    NAV_LIST.classList.remove('nav--active');
+    NAV_BAR.classList.remove('nav--active');
+    document.body.classList.remove('nav-open');
+};
+HAMBURGER_BTN.addEventListener('click', () => {
+    const isOpen = NAV_LIST.classList.toggle('nav--active');
+    NAV_BAR.classList.toggle('nav--active', isOpen);
+    document.body.classList.toggle('nav-open', isOpen);
+});
+
+/* -------------------------------------------------
+ * Scroll-spy: highlight the active nav link
+ * ------------------------------------------------- */
+const SECTIONS = document.querySelectorAll('#heroHeader, #about, #skills, #services, #works, #contact');
+const setActiveLink = () => {
+    const navHeight = NAV_BAR.getBoundingClientRect().height;
+    let currentId = SECTIONS[0].id;
+
+    SECTIONS.forEach((section) => {
+        if (window.scrollY >= section.offsetTop - navHeight - 120) {
+            currentId = section.getAttribute('id');
+        }
+    });
+
+    NAV_LINKS.forEach((link) => {
+        link.classList.toggle(ACTIVE_LINK_CLASS, link.getAttribute('href') === '#' + currentId);
+    });
+};
+setActiveLink();
+window.addEventListener('scroll', setActiveLink, { passive: true });
+
+/* Close the mobile menu when a link is clicked */
+NAV_LINKS.forEach((link) => {
+    link.addEventListener('click', () => {
+        closeMobileNav();
+        link.blur();
+    });
+});
+
+/* -------------------------------------------------
+ * Scroll reveal animations
+ * ------------------------------------------------- */
+const REVEAL_ITEMS = document.querySelectorAll('[data-reveal]');
+if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                entry.target.style.transitionDelay = (index % 3) * 90 + 'ms';
+                entry.target.classList.add('is-visible');
+                obs.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+
+    REVEAL_ITEMS.forEach((item) => observer.observe(item));
+} else {
+    REVEAL_ITEMS.forEach((item) => item.classList.add('is-visible'));
 }
 
-//Add padding to the header to make it visible because navbar has a fixed position.
-const addPaddingToHeroHeaderFn = () => {
-  const NAV_BAR_HEIGHT = NAV_BAR.getBoundingClientRect().height;
-  const HEIGHT_IN_REM = NAV_BAR_HEIGHT / 10;
+/* -------------------------------------------------
+ * Service card cursor glow
+ * ------------------------------------------------- */
+SERVICE_BOXES.forEach((service) => {
+    const bg = service.querySelector('.service-card__bg');
+    if (!bg) return;
 
-  // If hamburger button is active, do not add padding
-  if (NAV_LIST.classList.contains('nav--active')) {
-    return;
-  }
-  Object.assign(HERO_HEADER.style, {
-    paddingTop: HEIGHT_IN_REM + 'rem'
-  });
+    service.addEventListener('mousemove', (e) => {
+        const rect = service.getBoundingClientRect();
+        bg.style.left = (e.clientX - rect.left) + 'px';
+        bg.style.top = (e.clientY - rect.top) + 'px';
+    });
+});
+
+/* -------------------------------------------------
+ * Count-up animation for stat numbers
+ * ------------------------------------------------- */
+const STAT_NUMS = document.querySelectorAll('.stat-card__num[data-count]');
+const animateCount = (el) => {
+    const target = parseInt(el.dataset.count, 10);
+    const suffix = el.textContent.replace(/[0-9]/g, ''); // keep "+" or "%"
+    const duration = 1400;
+    const start = performance.now();
+
+    const step = (now) => {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(target * eased) + suffix;
+        if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+};
+
+if ('IntersectionObserver' in window && STAT_NUMS.length) {
+    const statObserver = new IntersectionObserver((entries, obs) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                animateCount(entry.target);
+                obs.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.6 });
+    STAT_NUMS.forEach((num) => statObserver.observe(num));
 }
-addPaddingToHeroHeaderFn();
-window.addEventListener('resize', ()=>{
-  addPaddingToHeroHeaderFn();
 
-  // When the navbar is active and the window is being resized, remove the active state once the breakpoint is reached
-  if(window.innerWidth >= BREAKPOINT){
-    addPaddingToHeroHeaderFn();
-    resetActiveState();
-  }
-});
-
-// As the user scrolls, the active link should change based on the section currently displayed on the screen.
-window.addEventListener('scroll', ()=>{
-  const sections = document.querySelectorAll('#heroHeader, #services, #works, #contact');
-
-  // Loop through sections and check if they are visible
-  sections.forEach((section) => {
-    const sectionTop = section.offsetTop;
-    const NAV_BAR_HEIGHT = NAV_BAR.getBoundingClientRect().height;
-    if (window.scrollY >= sectionTop - NAV_BAR_HEIGHT) {
-      const ID = section.getAttribute('id');
-      const LINK = NAV_LINKS.filter(link => {
-        return link.href.includes('#'+ID);
-      })[0];
-      console.log(LINK);
-      currentActiveLink.classList.remove(ACTIVE_LINK_CLASS);
-      LINK.classList.add(ACTIVE_LINK_CLASS);
-      currentActiveLink = LINK;
-    }
-  });
-});
-
-// Shows & hide navbar on smaller screen
-HAMBURGER_BTN.addEventListener('click', ()=>{
-  NAV_LIST.classList.toggle('nav--active');
-  if (NAV_LIST.classList.contains('nav--active')) {
-    Object.assign(document.body.style, {
-      overflowY: 'hidden'
-    });
-    Object.assign(NAV_LIST.style, {
-      height: '100vh'
-    });
-    return;
-  }
-  Object.assign(NAV_LIST.style, {
-    height: 0
-  });
-  Object.assign(document.body.style, {
-    overflowY: null
-  });
-});
-
-// When navbar link is clicked, reset the active state
-NAV_LINKS.forEach(link => {
-  link.addEventListener('click', ()=>{
-    resetActiveState();
-    link.blur();
-  })
-})
-
-// Handles the hover animation on services section
-SERVICE_BOXES.forEach(service => {
-  const moveBG = (x, y) => {
-    Object.assign(currentServiceBG.style, {
-      left: x + 'px',
-      top: y + 'px',
-    })
-  }
-  service.addEventListener('mouseenter', (e) => {
-    if (currentServiceBG === null) {
-      currentServiceBG = service.querySelector('.service-card__bg');
-    }
-    moveBG(e.clientX, e.clientY);
-  });
-  service.addEventListener('mousemove', (e) => {
-    const LEFT = e.clientX - service.getBoundingClientRect().left;
-    const TOP = e.clientY - service.getBoundingClientRect().top;
-    moveBG(LEFT, TOP);
-  });
-  service.addEventListener('mouseleave', () => {
-    const IMG_POS = service.querySelector('.service-card__illustration')
-    const LEFT = IMG_POS.offsetLeft + currentServiceBG.getBoundingClientRect().width;
-    const TOP = IMG_POS.offsetTop + currentServiceBG.getBoundingClientRect().height;
-
-    moveBG(LEFT, TOP);
-    currentServiceBG = null;
-  });
-});
-
-// Handles smooth scrolling
-new SweetScroll({
-  trigger: '.nav__list-link',
-  easing: 'easeOutQuint',
-  offset: NAV_BAR.getBoundingClientRect().height - 80
-});
+/* -------------------------------------------------
+ * Dynamic footer year
+ * ------------------------------------------------- */
+const YEAR_EL = document.getElementById('year');
+if (YEAR_EL) {
+    YEAR_EL.textContent = new Date().getFullYear();
+}
