@@ -462,7 +462,8 @@ body {
 /* Code card visual */
 .header__right {
     position: relative;
-    display: none;
+    display: block;
+    margin-top: 3rem;
 }
 .code-card {
     position: relative;
@@ -1246,7 +1247,27 @@ body {
         grid-template-columns: 1.1fr 0.9fr;
         padding-block: 8rem;
     }
-    .header__right { display: block; }
     .works { grid-template-columns: repeat(3, 1fr); }
     .about { grid-template-columns: 1.1fr 0.9fr; }
+}
+
+/*
+ * ========================
+ * Mobile — code card fits & flat (no tilt)
+ * ========================
+ */
+@media only screen and (max-width: 61.99em) {
+    .code-card {
+        transform: none;
+    }
+    .header__right:hover .code-card {
+        transform: none;
+    }
+    .code-card__body {
+        font-size: 1.25rem;
+        padding: 1.8rem 1.6rem;
+    }
+    /* Keep floating tags from spilling off-screen on phones */
+    .code-card__float--1 { right: 8px; }
+    .code-card__float--2 { left: 2px; }
 }
