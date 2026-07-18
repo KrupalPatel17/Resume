@@ -1209,7 +1209,7 @@ body {
  * Mobile Nav Menu
  * ==================
  */
-@media only screen and (max-width: 47.99em) {
+@media only screen and (max-width: 61.99em) {
     .nav__hamburger-btn { display: flex; }
     .nav__list {
         position: fixed;
@@ -1217,15 +1217,21 @@ body {
         flex-direction: column;
         justify-content: center;
         gap: 3.4rem;
-        background: rgba(8, 9, 13, 0.96);
+        padding: 2rem;
+        background: rgba(8, 9, 13, 0.97);
         backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
         transform: translateX(100%);
         transition: transform 0.4s var(--ease);
     }
-    .nav--active { transform: translateX(0); }
+    .nav--active .nav__list,
+    .nav__list.nav--active { transform: translateX(0); }
     .nav__list-link { font-size: 2.4rem; }
     .nav__cta { font-size: 1.8rem; padding: 1.2rem 2.6rem; }
     body.nav-open { overflow: hidden; }
+
+    /* Scroll hint would overlap the taller mobile hero — hide it */
+    .scroll-hint { display: none; }
 }
 
 /*
